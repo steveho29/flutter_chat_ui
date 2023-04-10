@@ -7,6 +7,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+import '../../../flutter_chat_ui.dart';
 import '../../models/input_clear_mode.dart';
 import '../../models/send_button_visibility_mode.dart';
 import '../../util.dart';
@@ -32,7 +33,9 @@ class Input extends StatefulWidget {
     this.onAudioRecorded,
     this.isAutoSpeak = false,
     this.onIsAutoSpeak,
+    required this.l10n,
   });
+  ChatL10n l10n;
 
   /// See [AudioButton.onPressed].
   final Future<bool> Function({
@@ -439,7 +442,7 @@ class _InputState extends State<Input> {
                     value: widget.isAutoSpeak,
                   ),
                   Text(
-                    'Auto Speaker',
+                    widget.l10n.autoSpeakerSwitchLabel,
                     style: TextStyle(color: Colors.white54),
                   ),
                 ],

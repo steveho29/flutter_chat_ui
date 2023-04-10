@@ -488,6 +488,7 @@ class ChatState extends State<Chat> {
                             onAudioRecorded: widget.onAudioRecorded,
                             onIsAutoSpeak: widget.onIsAutoSpeak,
                             options: widget.inputOptions,
+                            l10n: widget.l10n,
                           ),
                     ],
                   ),

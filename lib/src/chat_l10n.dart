@@ -16,7 +16,10 @@ abstract class ChatL10n {
     this.playButtonAccessibilityLabel = 'Play',
     this.pauseButtonAccessibilityLabel = 'Pause',
     this.audioTrackAccessibilityLabel = 'Tap to play/pause, slide to seek',
+    this.autoSpeakerSwitchLabel = 'Auto Speaker',
   });
+
+  final String autoSpeakerSwitchLabel;
 
   /// Accessibility label (hint) for the audio track.
   final String audioTrackAccessibilityLabel;
@@ -108,6 +111,7 @@ class ChatL10nVi extends ChatL10n {
     super.inputPlaceholder = 'Nhập nội dung hoặc sử dụng giọng nói',
     super.sendButtonAccessibilityLabel = 'Gửi',
     super.unreadMessagesLabel = 'Chưa xem',
+    super.autoSpeakerSwitchLabel = 'Đọc tự động',
   });
 }
 
