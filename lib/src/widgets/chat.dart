@@ -5,6 +5,7 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart' show PhotoViewComputedScale;
 import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import '../chat_l10n.dart';
 import '../chat_theme.dart';
@@ -33,6 +34,8 @@ class Chat extends StatefulWidget {
   /// Creates a chat widget.
   const Chat({
     super.key,
+    this.isAudioUploading,
+    this.onAudioRecorded,
     this.audioMessageBuilder,
     this.avatarBuilder,
     this.bubbleBuilder,
@@ -95,7 +98,20 @@ class Chat extends StatefulWidget {
     this.userAgent,
     this.useTopSafeAreaInset,
     this.videoMessageBuilder,
+    this.isAutoPlay = false,
   });
+
+  bool isAutoPlay;
+
+  /// See [Input.isAudioUploading].
+  final bool? isAudioUploading;
+
+  /// See [Input.onAudioRecorded].
+  final Future<bool> Function({
+    required Duration length,
+    required String filePath,
+    required List<double> waveForm,
+  })? onAudioRecorded;
 
   /// See [Message.audioMessageBuilder].
   final Widget Function(types.AudioMessage, {required int messageWidth})?
@@ -330,6 +346,7 @@ class Chat extends StatefulWidget {
 class ChatState extends State<Chat> {
   /// Used to get the correct auto scroll index from [_autoScrollIndexById].
   static const String _unreadHeaderId = 'unread_header_id';
+  FlutterTts textToSpeech = FlutterTts();
 
   List<Object> _chatMessages = [];
   List<PreviewImage> _gallery = [];
@@ -462,6 +479,8 @@ class ChatState extends State<Chat> {
                             isAttachmentUploading: widget.isAttachmentUploading,
                             onAttachmentPressed: widget.onAttachmentPressed,
                             onSendPressed: widget.onSendPressed,
+                            isAudioUploading: widget.isAudioUploading,
+                            onAudioRecorded: widget.onAudioRecorded,
                             options: widget.inputOptions,
                           ),
                     ],

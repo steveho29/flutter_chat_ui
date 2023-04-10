@@ -110,7 +110,32 @@ abstract class ChatTheme {
     required this.userAvatarNameColors,
     required this.userAvatarTextStyle,
     required this.userNameTextStyle,
+    required this.audioButtonIcon,
+    required this.recordButtonIcon,
+    required this.pauseButtonIcon,
+    required this.cancelRecordingButtonIcon,
+    required this.recordColor,
+    required this.playButtonIcon,
   });
+
+  /// Icon for audio recording button
+  final Widget? audioButtonIcon;
+
+  /// Icon for record button
+  final Widget? recordButtonIcon;
+
+  /// Icon for recording cancellation button
+  final Widget? cancelRecordingButtonIcon;
+
+  /// Icon for pause button
+  final Widget? pauseButtonIcon;
+
+  /// Color of the recording button, used for the recording button itself
+  /// as well as for the animated decibel gauge
+  final Color recordColor;
+
+  /// Icon for play button
+  final Widget? playButtonIcon;
 
   /// Icon for select attachment button.
   final Widget? attachmentButtonIcon;
@@ -300,6 +325,12 @@ class DefaultChatTheme extends ChatTheme {
   /// override only a couple of properties, otherwise create a new class
   /// which extends [ChatTheme]
   const DefaultChatTheme({
+    super.audioButtonIcon,
+    super.recordButtonIcon,
+    super.pauseButtonIcon,
+    super.cancelRecordingButtonIcon,
+    super.recordColor = Colors.red,
+    super.playButtonIcon,
     super.attachmentButtonIcon,
     super.attachmentButtonMargin,
     super.backgroundColor = neutral7,
@@ -469,6 +500,12 @@ class DarkChatTheme extends ChatTheme {
   /// override only a couple of properties, otherwise create a new class
   /// which extends [ChatTheme]
   const DarkChatTheme({
+    super.audioButtonIcon,
+    super.recordButtonIcon,
+    super.pauseButtonIcon,
+    super.cancelRecordingButtonIcon,
+    super.recordColor = Colors.red,
+    super.playButtonIcon,
     super.attachmentButtonIcon,
     super.attachmentButtonMargin,
     super.backgroundColor = dark,

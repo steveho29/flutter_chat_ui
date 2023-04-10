@@ -12,7 +12,23 @@ abstract class ChatL10n {
     required this.inputPlaceholder,
     required this.sendButtonAccessibilityLabel,
     required this.unreadMessagesLabel,
+    this.audioButtonAccessibilityLabel = 'Record audio message',
+    this.playButtonAccessibilityLabel = 'Play',
+    this.pauseButtonAccessibilityLabel = 'Pause',
+    this.audioTrackAccessibilityLabel = 'Tap to play/pause, slide to seek',
   });
+
+  /// Accessibility label (hint) for the audio track.
+  final String audioTrackAccessibilityLabel;
+
+  /// Accessibility label (hint) for the audio button.
+  final String audioButtonAccessibilityLabel;
+
+  /// Accessibility label (hint) for the tap action on audio message when playing.
+  final String pauseButtonAccessibilityLabel;
+
+  /// Accessibility label (hint) for the tap action on audio message when not playing.
+  final String playButtonAccessibilityLabel;
 
   /// Accessibility label (hint) for the attachment button.
   final String attachmentButtonAccessibilityLabel;
@@ -75,7 +91,7 @@ class ChatL10nEn extends ChatL10n {
     super.attachmentButtonAccessibilityLabel = 'Send media',
     super.emptyChatPlaceholder = 'No messages here yet',
     super.fileButtonAccessibilityLabel = 'File',
-    super.inputPlaceholder = 'Message',
+    super.inputPlaceholder = 'Start typing or talking',
     super.sendButtonAccessibilityLabel = 'Send',
     super.unreadMessagesLabel = 'Unread messages',
   });

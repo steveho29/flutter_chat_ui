@@ -13,6 +13,7 @@ import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(const MyApp()));
@@ -39,24 +40,31 @@ class _ChatPageState extends State<ChatPage> {
   final _user = const types.User(
     id: '82091008-a484-4a89-ae75-a22bf8d6f3ac',
   );
+  bool _microphoneAllowed = false;
 
   @override
   void initState() {
     super.initState();
     _loadMessages();
+    _askForMicrophonePermission();
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         body: Chat(
           messages: _messages,
-          onAttachmentPressed: _handleAttachmentPressed,
+          inputOptions: const InputOptions(
+            sendButtonVisibilityMode: SendButtonVisibilityMode.always,
+          ),
+          // onAttachmentPressed: _handleAttachmentPressed,
+          // onAudioRecorded: _microphoneAllowed ? _handleAudioRecorded : null,
           onMessageTap: _handleMessageTap,
           onPreviewDataFetched: _handlePreviewDataFetched,
           onSendPressed: _handleSendPressed,
           showUserAvatars: true,
           showUserNames: true,
           user: _user,
+          theme: DarkChatTheme(),
         ),
       );
 
@@ -64,6 +72,22 @@ class _ChatPageState extends State<ChatPage> {
     setState(() {
       _messages.insert(0, message);
     });
+  }
+
+  Future<void> _askForMicrophonePermission() async {
+    if (await Permission.microphone.request().isGranted) {
+      setState(() {
+        _microphoneAllowed = true;
+      });
+    }
+  }
+
+  Future<bool> _handleAudioRecorded({
+    required Duration length,
+    required String filePath,
+    required List<double> waveForm,
+  }) async {
+    return true;
   }
 
   void _handleAttachmentPressed() {
@@ -226,13 +250,13 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _loadMessages() async {
-    final response = await rootBundle.loadString('assets/messages.json');
-    final messages = (jsonDecode(response) as List)
-        .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
-        .toList();
+    // final response = await rootBundle.loadString('assets/messages.json');
+    // final messages = (jsonDecode(response) as List)
+    //     .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
+    //     .toList();
 
-    setState(() {
-      _messages = messages;
-    });
+    // setState(() {
+    //   _messages = messages;
+    // });
   }
 }
