@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -13,6 +14,7 @@ import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(const MyApp()));
@@ -39,31 +41,77 @@ class _ChatPageState extends State<ChatPage> {
   final _user = const types.User(
     id: '82091008-a484-4a89-ae75-a22bf8d6f3ac',
   );
+  final _user2 = const types.User(
+    id: '82091008-a484-4a89-ae75-a22bf8d6f3a',
+  );
+  bool _microphoneAllowed = false;
+
+  bool _isAutoSpeak = false;
 
   @override
   void initState() {
     super.initState();
     _loadMessages();
+    _askForMicrophonePermission();
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         body: Chat(
           messages: _messages,
-          onAttachmentPressed: _handleAttachmentPressed,
+          inputOptions: const InputOptions(
+            sendButtonVisibilityMode: SendButtonVisibilityMode.always,
+          ),
+          // onAttachmentPressed: _handleAttachmentPressed,
+          // onAudioRecorded: _microphoneAllowed ? _handleAudioRecorded : null,
           onMessageTap: _handleMessageTap,
           onPreviewDataFetched: _handlePreviewDataFetched,
           onSendPressed: _handleSendPressed,
           showUserAvatars: true,
           showUserNames: true,
           user: _user,
+          theme: DarkChatTheme(),
+          isAutoSpeak: _isAutoSpeak,
+          onIsAutoSpeak: (value) {
+            setState(() {
+              _isAutoSpeak = value;
+            });
+          },
+          onSpeaking: onSpeaking,
         ),
       );
+
+  FlutterTts flutterTts = FlutterTts();
+
+  Future onSpeaking(int index, bool isSpeaking, String text) async {
+    if (isSpeaking) {
+      await flutterTts.speak(text);
+    } else {
+      await flutterTts.stop();
+    }
+  }
 
   void _addMessage(types.Message message) {
     setState(() {
       _messages.insert(0, message);
     });
+    if (_isAutoSpeak) flutterTts.speak((message as types.TextMessage).text);
+  }
+
+  Future<void> _askForMicrophonePermission() async {
+    if (await Permission.microphone.request().isGranted) {
+      setState(() {
+        _microphoneAllowed = true;
+      });
+    }
+  }
+
+  Future<bool> _handleAudioRecorded({
+    required Duration length,
+    required String filePath,
+    required List<double> waveForm,
+  }) async {
+    return true;
   }
 
   void _handleAttachmentPressed() {
@@ -222,17 +270,25 @@ class _ChatPageState extends State<ChatPage> {
       text: message.text,
     );
 
+    final textMessage2 = types.TextMessage(
+      author: _user2,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      id: const Uuid().v4(),
+      text: message.text,
+    );
+
     _addMessage(textMessage);
+    _addMessage(textMessage2);
   }
 
   void _loadMessages() async {
-    final response = await rootBundle.loadString('assets/messages.json');
-    final messages = (jsonDecode(response) as List)
-        .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
-        .toList();
+    // final response = await rootBundle.loadString('assets/messages.json');
+    // final messages = (jsonDecode(response) as List)
+    //     .map((e) => types.Message.fromJson(e as Map<String, dynamic>))
+    //     .toList();
 
-    setState(() {
-      _messages = messages;
-    });
+    // setState(() {
+    //   _messages = messages;
+    // });
   }
 }
