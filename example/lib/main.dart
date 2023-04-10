@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -40,7 +41,12 @@ class _ChatPageState extends State<ChatPage> {
   final _user = const types.User(
     id: '82091008-a484-4a89-ae75-a22bf8d6f3ac',
   );
+  final _user2 = const types.User(
+    id: '82091008-a484-4a89-ae75-a22bf8d6f3a',
+  );
   bool _microphoneAllowed = false;
+
+  bool _isAutoSpeak = false;
 
   @override
   void initState() {
@@ -65,13 +71,31 @@ class _ChatPageState extends State<ChatPage> {
           showUserNames: true,
           user: _user,
           theme: DarkChatTheme(),
+          isAutoSpeak: _isAutoSpeak,
+          onIsAutoSpeak: (value) {
+            setState(() {
+              _isAutoSpeak = value;
+            });
+          },
+          onSpeaking: onSpeaking,
         ),
       );
+
+  FlutterTts flutterTts = FlutterTts();
+
+  Future onSpeaking(int index, bool isSpeaking, String text) async {
+    if (isSpeaking) {
+      await flutterTts.speak(text);
+    } else {
+      await flutterTts.stop();
+    }
+  }
 
   void _addMessage(types.Message message) {
     setState(() {
       _messages.insert(0, message);
     });
+    if (_isAutoSpeak) flutterTts.speak((message as types.TextMessage).text);
   }
 
   Future<void> _askForMicrophonePermission() async {
@@ -246,7 +270,15 @@ class _ChatPageState extends State<ChatPage> {
       text: message.text,
     );
 
+    final textMessage2 = types.TextMessage(
+      author: _user2,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      id: const Uuid().v4(),
+      text: message.text,
+    );
+
     _addMessage(textMessage);
+    _addMessage(textMessage2);
   }
 
   void _loadMessages() async {

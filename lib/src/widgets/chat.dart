@@ -1,11 +1,11 @@
 import 'dart:math';
+import 'package:text_to_speech/text_to_speech.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart' show PhotoViewComputedScale;
 import 'package:scroll_to_index/scroll_to_index.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 import '../chat_l10n.dart';
 import '../chat_theme.dart';
@@ -98,10 +98,15 @@ class Chat extends StatefulWidget {
     this.userAgent,
     this.useTopSafeAreaInset,
     this.videoMessageBuilder,
-    this.isAutoPlay = false,
+    this.isAutoSpeak = false,
+    this.onIsAutoSpeak,
+    this.onSpeaking,
   });
 
-  bool isAutoPlay;
+  final Future Function(int index, bool isSpeaking, String text)? onSpeaking;
+
+  final void Function(bool value)? onIsAutoSpeak;
+  final bool isAutoSpeak;
 
   /// See [Input.isAudioUploading].
   final bool? isAudioUploading;
@@ -346,7 +351,6 @@ class Chat extends StatefulWidget {
 class ChatState extends State<Chat> {
   /// Used to get the correct auto scroll index from [_autoScrollIndexById].
   static const String _unreadHeaderId = 'unread_header_id';
-  FlutterTts textToSpeech = FlutterTts();
 
   List<Object> _chatMessages = [];
   List<PreviewImage> _gallery = [];
@@ -418,7 +422,7 @@ class ChatState extends State<Chat> {
         _autoScrollIndexById[id]!,
         duration: duration ?? scrollAnimationDuration,
       );
-
+  void onAutoPlay() {}
   @override
   Widget build(BuildContext context) => InheritedUser(
         user: widget.user,
@@ -476,11 +480,13 @@ class ChatState extends State<Chat> {
                       ),
                       widget.customBottomWidget ??
                           Input(
+                            isAutoSpeak: widget.isAutoSpeak,
                             isAttachmentUploading: widget.isAttachmentUploading,
                             onAttachmentPressed: widget.onAttachmentPressed,
                             onSendPressed: widget.onSendPressed,
                             isAudioUploading: widget.isAudioUploading,
                             onAudioRecorded: widget.onAudioRecorded,
+                            onIsAutoSpeak: widget.onIsAutoSpeak,
                             options: widget.inputOptions,
                           ),
                     ],
@@ -574,6 +580,8 @@ class ChatState extends State<Chat> {
                 : min(constraints.maxWidth * 0.78, 440).floor();
 
         messageWidget = Message(
+          index: index ?? 0,
+          onSpeaking: widget.onSpeaking,
           audioMessageBuilder: widget.audioMessageBuilder,
           avatarBuilder: widget.avatarBuilder,
           bubbleBuilder: widget.bubbleBuilder,

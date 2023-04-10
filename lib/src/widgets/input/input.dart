@@ -7,7 +7,6 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-
 import '../../models/input_clear_mode.dart';
 import '../../models/send_button_visibility_mode.dart';
 import '../../util.dart';
@@ -23,7 +22,7 @@ import 'send_button.dart';
 /// send buttons inside. By default hides send button when text field is empty.
 class Input extends StatefulWidget {
   /// Creates [Input] widget.
-  const Input({
+  Input({
     super.key,
     this.isAttachmentUploading,
     this.onAttachmentPressed,
@@ -31,6 +30,8 @@ class Input extends StatefulWidget {
     this.options = const InputOptions(),
     this.isAudioUploading,
     this.onAudioRecorded,
+    this.isAutoSpeak = false,
+    this.onIsAutoSpeak,
   });
 
   /// See [AudioButton.onPressed].
@@ -55,12 +56,16 @@ class Input extends StatefulWidget {
   /// See [AttachmentButton.onPressed].
   final VoidCallback? onAttachmentPressed;
 
+  final void Function(bool value)? onIsAutoSpeak;
+
   /// Will be called on [SendButton] tap. Has [types.PartialText] which can
   /// be transformed to [types.TextMessage] and added to the messages list.
   final void Function(types.PartialText) onSendPressed;
 
   /// Customisation options for the [Input].
   final InputOptions options;
+
+  bool isAutoSpeak = false;
 
   @override
   State<Input> createState() => _InputState();
@@ -81,8 +86,13 @@ class _InputState extends State<Input> {
 
   /// Each time to start a speech recognition session
   void _startListening() async {
+    if (!_speechEnabled) {
+      _initSpeech();
+    }
     await _speechToText.listen(onResult: _onSpeechResult);
-    setState(() {});
+    setState(() {
+      _recordingAudio = true;
+    });
   }
 
   /// Manually stop the active speech recognition session
@@ -91,7 +101,9 @@ class _InputState extends State<Input> {
   /// listen method.
   void _stopListening() async {
     await _speechToText.stop();
-    setState(() {});
+    setState(() {
+      _recordingAudio = false;
+    });
   }
 
   /// This is the callback that the SpeechToText plugin calls when
@@ -123,6 +135,7 @@ class _InputState extends State<Input> {
   );
 
   bool _sendButtonVisible = false;
+  bool _recordingAudio = false;
   late TextEditingController _textController;
 
   @override
@@ -150,8 +163,6 @@ class _InputState extends State<Input> {
     _textController.dispose();
     super.dispose();
   }
-
-  bool _recordingAudio = false;
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -292,54 +303,54 @@ class _InputState extends State<Input> {
                         onPressed: widget.onAttachmentPressed,
                         padding: buttonPadding,
                       ),
+                    // if (_recordingAudio)
+                    //   Expanded(
+                    //     child: AudioRecorder(
+                    //       key: _audioRecorderKey,
+                    //       onCancelRecording: _cancelRecording,
+                    //     ),
+                    //   ),
                     Expanded(
                       child: Padding(
                         padding: textPadding,
-                        child: _recordingAudio
-                            ? AudioRecorder(
-                                key: _audioRecorderKey,
-                                onCancelRecording: _cancelRecording,
-                              )
-                            : TextField(
-                                controller: _textController,
-                                cursorColor: InheritedChatTheme.of(context)
-                                    .theme
-                                    .inputTextCursorColor,
-                                decoration: InheritedChatTheme.of(context)
-                                    .theme
-                                    .inputTextDecoration
-                                    .copyWith(
-                                      hintStyle: InheritedChatTheme.of(context)
-                                          .theme
-                                          .inputTextStyle
-                                          .copyWith(
-                                            color:
-                                                InheritedChatTheme.of(context)
-                                                    .theme
-                                                    .inputTextColor
-                                                    .withOpacity(0.5),
-                                          ),
-                                      hintText: InheritedL10n.of(context)
-                                          .l10n
-                                          .inputPlaceholder,
-                                    ),
-                                focusNode: _inputFocusNode,
-                                keyboardType: TextInputType.multiline,
-                                maxLines: 5,
-                                minLines: 1,
-                                onChanged: widget.options.onTextChanged,
-                                onTap: widget.options.onTextFieldTap,
-                                style: InheritedChatTheme.of(context)
+                        child: TextField(
+                          controller: _textController,
+                          cursorColor: InheritedChatTheme.of(context)
+                              .theme
+                              .inputTextCursorColor,
+                          decoration: InheritedChatTheme.of(context)
+                              .theme
+                              .inputTextDecoration
+                              .copyWith(
+                                hintStyle: InheritedChatTheme.of(context)
                                     .theme
                                     .inputTextStyle
                                     .copyWith(
                                       color: InheritedChatTheme.of(context)
                                           .theme
-                                          .inputTextColor,
+                                          .inputTextColor
+                                          .withOpacity(0.5),
                                     ),
-                                textCapitalization:
-                                    TextCapitalization.sentences,
+                                hintText: InheritedL10n.of(context)
+                                    .l10n
+                                    .inputPlaceholder,
                               ),
+                          focusNode: _inputFocusNode,
+                          keyboardType: TextInputType.multiline,
+                          maxLines: 5,
+                          minLines: 1,
+                          onChanged: widget.options.onTextChanged,
+                          onTap: widget.options.onTextFieldTap,
+                          style: InheritedChatTheme.of(context)
+                              .theme
+                              .inputTextStyle
+                              .copyWith(
+                                color: InheritedChatTheme.of(context)
+                                    .theme
+                                    .inputTextColor,
+                              ),
+                          textCapitalization: TextCapitalization.sentences,
+                        ),
                       ),
                     ),
                     ConstrainedBox(
@@ -372,29 +383,20 @@ class _InputState extends State<Input> {
           ),
         ),
         Align(
-          heightFactor: 1.2,
+          heightFactor: 1.6,
           alignment: AlignmentDirectional.bottomCenter,
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             HoldTimeoutDetector(
-              onTimeout: () => {print('holding')},
-              onTimerInitiated: () {
-                // setState(() {
-                //   _recordingAudio = true;
-                // });
-                _startListening();
-              },
-              onCancel: () {
-                // setState(() {
-                //   _recordingAudio = false;
-                // });
-                _stopListening();
-              },
-              holdTimeout: Duration(milliseconds: 30000),
+              onTimeout: _stopListening,
+              onTimerInitiated: _startListening,
+              enableHapticFeedback: true,
+              onCancel: _stopListening,
+              holdTimeout: const Duration(milliseconds: 30000),
               child: AvatarGlow(
-                animate: _speechToText.isListening,
+                animate: _recordingAudio,
                 glowColor: InheritedChatTheme.of(context).theme.primaryColor,
-                endRadius: 90.0,
-                duration: const Duration(milliseconds: 2000),
+                endRadius: 50.0,
+                duration: const Duration(milliseconds: 1000),
                 repeatPauseDuration: const Duration(milliseconds: 100),
                 repeat: true,
                 child: Material(
@@ -407,15 +409,43 @@ class _InputState extends State<Input> {
                         .inputBackgroundColor,
                     child: const Icon(
                       Icons.mic,
-                      size: 30,
+                      size: 35,
                     ),
-                    radius: 40,
+                    radius: 30,
                   ),
                 ),
               ),
             ),
           ]),
         ),
+        if (widget.onIsAutoSpeak != null)
+          Align(
+            heightFactor: 2.2,
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                children: [
+                  Switch(
+                    onChanged: (value) {
+                      setState(() {
+                        widget.isAutoSpeak = value;
+                      });
+                      widget.onIsAutoSpeak!(value);
+                    },
+                    activeColor: InheritedChatTheme.of(context)
+                        .theme
+                        .sentMessageDocumentIconColor,
+                    value: widget.isAutoSpeak,
+                  ),
+                  Text(
+                    'Auto Speaker',
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

@@ -39,6 +39,7 @@ dependencies:
   flutter_chat_types: ^3.6.0
   flutter_chat_ui:
     path: ../
+  flutter_tts: ^3.6.3
   http: ^0.13.5
   image_picker: ^0.8.6
   intl: ^0.17.0

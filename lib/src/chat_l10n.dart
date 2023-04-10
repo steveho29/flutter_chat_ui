@@ -97,6 +97,20 @@ class ChatL10nEn extends ChatL10n {
   });
 }
 
+class ChatL10nVi extends ChatL10n {
+  /// Creates English l10n. Use this constructor if you want to
+  /// override only a couple of properties, otherwise create a new class
+  /// which extends [ChatL10n]
+  const ChatL10nVi({
+    super.attachmentButtonAccessibilityLabel = 'Gửi tệp',
+    super.emptyChatPlaceholder = 'Không có tin nhắn',
+    super.fileButtonAccessibilityLabel = 'File',
+    super.inputPlaceholder = 'Nhập nội dung hoặc sử dụng giọng nói',
+    super.sendButtonAccessibilityLabel = 'Gửi',
+    super.unreadMessagesLabel = 'Chưa xem',
+  });
+}
+
 /// Spanish l10n which extends [ChatL10n].
 @immutable
 class ChatL10nEs extends ChatL10n {
